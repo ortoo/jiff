@@ -49,7 +49,8 @@ function initState(options, patch) {
 	if(typeof options === 'object') {
 		return {
 			patch: patch,
-			hash: orElse(isFunction, options.hash, defaultHash),
+			objectIdKey: options.objectIdKey,
+			hash: orElse(isFunction, options.hash, idHasher(options.objectIdKey)),
 			makeContext: orElse(isFunction, options.makeContext, defaultContext),
 			invertible: !(options.invertible === false)
 		};
@@ -153,7 +154,7 @@ function appendArrayChanges(a1, a2, path, state) {
 function lcsToJsonPatch(a1, a2, path, state, lcsMatrix) {
 	var offset = 0;
 	return lcs.reduce(function(state, op, i, j) {
-		var last, context;
+		var last, context, orig, patchlen;
 		var patch = state.patch;
 		var p = path + '/' + (j + offset);
 
@@ -185,7 +186,20 @@ function lcsToJsonPatch(a1, a2, path, state, lcsMatrix) {
 			offset += 1;
 
 		} else {
+			orig = a1[j];
+			patchlen = 0;
+			if (state.objectIdKey && isValidObject(orig) && orig[state.objectIdKey]) {
+				patch.push({op: 'test', path: p + '/' + encodeSegment(state.objectIdKey), value: orig[state.objectIdKey]})
+				patchlen = patch.length;
+			}
+
+
 			appendChanges(a1[j], a2[i], p, state);
+
+			// If no more has been added to the patch then remove our test - we don't need it
+			if (patchlen && state.patch.length === patchlen) {
+				state.patch.length -= 1;
+			}
 		}
 
 		return state;
@@ -211,6 +225,17 @@ function appendValueChanges(a, b, path, state) {
 	}
 
 	return state;
+}
+
+function idHasher(idKey) {
+	return function (obj) {
+		if (idKey && isValidObject(obj) && obj[idKey]) {
+			return obj[idKey];
+		}
+
+		return defaultHash(obj);
+	}
+
 }
 
 /**
