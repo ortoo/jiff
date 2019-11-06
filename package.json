@@ -20,7 +20,8 @@
     "buster": "~0.7",
     "gent": "0.6.2",
     "jshint": "~2",
-    "json-patch-test-suite": "^1.0.1"
+    "json-patch-test-suite": "^1.0.1",
+    "prettier": "^1.18.2"
   },
   "repository": {
     "type": "git",
