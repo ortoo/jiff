@@ -1,6 +1,6 @@
 {
   "name": "@ortoo/jiff",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "JSON diff and patch based on rfc6902",
   "main": "jiff",
   "scripts": {
